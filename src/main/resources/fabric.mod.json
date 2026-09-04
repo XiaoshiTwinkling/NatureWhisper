@@ -1,0 +1,44 @@
+{
+	"schemaVersion": 1,
+	"id": "naturewhisper",
+	"version": "${version}",
+	"name": "NatureWhisper",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"XiaoshiTwinkling"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/naturewhisper/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.xiaoshi.NatureWhisper"
+		],
+		"client": [
+			"com.xiaoshi.NatureWhisperClient"
+		],
+		"fabric-datagen": [
+			"com.xiaoshi.NatureWhisperDataGenerator"
+		]
+	},
+	"mixins": [
+		"naturewhisper.mixins.json",
+		{
+			"config": "naturewhisper.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
