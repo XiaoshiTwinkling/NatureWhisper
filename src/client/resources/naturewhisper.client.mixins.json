@@ -3,6 +3,7 @@
 	"package": "com.xiaoshi.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"ChunkBorderDebugRendererMixin",
 		"ExampleClientMixin"
 	],
 	"injectors": {

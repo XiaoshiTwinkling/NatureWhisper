@@ -3,6 +3,7 @@
 	"package": "com.xiaoshi.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"ChunkSectionMixin",
 		"ExampleMixin"
 	],
 	"injectors": {
