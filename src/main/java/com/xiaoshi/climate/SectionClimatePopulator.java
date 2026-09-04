@@ -144,8 +144,10 @@ public final class SectionClimatePopulator {
 			if (weightSum <= 0.0) {
 				continue;
 			}
-			climate.naturewhisper$setTemperature((float) (temperature / weightSum * RAW_TEMP_TO_CELSIUS));
-			climate.naturewhisper$setHumidity((float) Math.max(0.0, Math.min(1.0, humidity / weightSum)));
+			climate.naturewhisper$setBaseTemperature((float) (temperature / weightSum * RAW_TEMP_TO_CELSIUS));
+			climate.naturewhisper$setTemperature(climate.naturewhisper$getBaseTemperature());
+			climate.naturewhisper$setBaseHumidity((float) Math.max(0.0, Math.min(1.0, humidity / weightSum)));
+			climate.naturewhisper$setHumidity(climate.naturewhisper$getBaseHumidity());
 		}
 	}
 

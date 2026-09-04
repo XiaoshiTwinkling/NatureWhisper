@@ -18,6 +18,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ChunkSection.class)
 public abstract class ChunkSectionMixin implements SectionClimate {
 	@Unique
+	private float naturewhisper$baseTemperature;
+
+	@Unique
+	private float naturewhisper$baseHumidity;
+
+	@Unique
 	private float naturewhisper$temperature;
 
 	@Unique
@@ -34,11 +40,33 @@ public abstract class ChunkSectionMixin implements SectionClimate {
 
 	@Inject(method = "<init>", at = @At("RETURN"))
 	private void naturewhisper$initClimate(CallbackInfo ci) {
+		this.naturewhisper$baseTemperature = SectionClimate.DEFAULT_TEMPERATURE;
+		this.naturewhisper$baseHumidity = SectionClimate.DEFAULT_HUMIDITY;
 		this.naturewhisper$temperature = SectionClimate.DEFAULT_TEMPERATURE;
 		this.naturewhisper$humidity = SectionClimate.DEFAULT_HUMIDITY;
 		this.naturewhisper$windDirectionX = SectionClimate.DEFAULT_WIND_DIRECTION_X;
 		this.naturewhisper$windDirectionZ = SectionClimate.DEFAULT_WIND_DIRECTION_Z;
 		this.naturewhisper$windStrength = SectionClimate.DEFAULT_WIND_STRENGTH;
+	}
+
+	@Override
+	public float naturewhisper$getBaseTemperature() {
+		return this.naturewhisper$baseTemperature;
+	}
+
+	@Override
+	public void naturewhisper$setBaseTemperature(float baseTemperature) {
+		this.naturewhisper$baseTemperature = baseTemperature;
+	}
+
+	@Override
+	public float naturewhisper$getBaseHumidity() {
+		return this.naturewhisper$baseHumidity;
+	}
+
+	@Override
+	public void naturewhisper$setBaseHumidity(float baseHumidity) {
+		this.naturewhisper$baseHumidity = baseHumidity;
 	}
 
 	@Override

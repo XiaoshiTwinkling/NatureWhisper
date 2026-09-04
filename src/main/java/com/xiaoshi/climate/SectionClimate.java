@@ -8,8 +8,10 @@ import net.minecraft.world.chunk.ChunkSection;
  * <p>Implemented by {@link com.xiaoshi.mixin.ChunkSectionMixin}; obtain an instance by
  * casting any chunk section: {@code (SectionClimate) section}.
  *
- * <p>The numeric scales below are placeholders chosen for a natural/real-world flavour
- * (temperature in °C, humidity 0..1, wind speed in m/s) and are not wired to any logic yet.
+ * <p>Each section stores an immutable biome-derived {@code base} value (temperature °C, humidity
+ * 0..1, seeded once at chunk load by {@link SectionClimatePopulator}) plus a live value that
+ * {@link ClimateSimulator} re-derives every second from {@code base}, the real block column, and
+ * the time of day. Wind (direction + strength) is likewise recomputed by the simulator.
  */
 public interface SectionClimate {
 	/** Placeholder default temperature, °C. */
@@ -21,6 +23,16 @@ public interface SectionClimate {
 	float DEFAULT_WIND_DIRECTION_Z = 0.0F;
 	/** Placeholder default wind speed, m/s. */
 	float DEFAULT_WIND_STRENGTH = 0.0F;
+
+	/** Immutable (after chunk load) biome-derived base temperature, °C. */
+	float naturewhisper$getBaseTemperature();
+
+	void naturewhisper$setBaseTemperature(float baseTemperature);
+
+	/** Immutable (after chunk load) biome-derived base humidity, 0..1. */
+	float naturewhisper$getBaseHumidity();
+
+	void naturewhisper$setBaseHumidity(float baseHumidity);
 
 	float naturewhisper$getTemperature();
 
