@@ -2,8 +2,6 @@ package com.xiaoshi;
 
 import com.xiaoshi.climate.ClimateSimulator;
 import com.xiaoshi.climate.SectionClimatePopulator;
-import com.xiaoshi.cloud.CloudFieldPopulator;
-import com.xiaoshi.cloud.CloudSimulator;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -27,7 +25,6 @@ public class NatureWhisperClient implements ClientModInitializer {
 				}
 				return world.isChunkLoaded(x, z) ? world.getChunk(x, z) : null;
 			}, chunkX, chunkZ);
-			CloudFieldPopulator.initializeColumn(world, chunk);
 		});
 
 		// Advance the deterministic climate model on the client too, gated by the same clock cadence
@@ -47,9 +44,6 @@ public class NatureWhisperClient implements ClientModInitializer {
 			ClimateSimulator.simulateAround(world, (x, z) ->
 				world.isChunkLoaded(x, z) ? world.getChunk(x, z) : null,
 				pos.x, pos.z, ClimateSimulator.SIM_RADIUS_SECTIONS, world.getTimeOfDay());
-			CloudSimulator.step(world, (x, z) ->
-				world.isChunkLoaded(x, z) ? world.getChunk(x, z) : null,
-				pos.x, pos.z, ClimateSimulator.SIM_RADIUS_SECTIONS);
 		});
 	}
 }

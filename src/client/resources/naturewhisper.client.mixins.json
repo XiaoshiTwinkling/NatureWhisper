@@ -4,8 +4,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"ChunkBorderDebugRendererMixin",
-		"WorldRendererCloudsMixin",
-		"GameRendererMixin"
+		"ExampleClientMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

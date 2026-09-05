@@ -4,7 +4,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"ChunkSectionMixin",
-		"WorldChunkMixin"
+		"ExampleMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
