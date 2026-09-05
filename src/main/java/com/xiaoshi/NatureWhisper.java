@@ -2,6 +2,8 @@ package com.xiaoshi;
 
 import com.xiaoshi.climate.ClimateSimulator;
 import com.xiaoshi.climate.SectionClimatePopulator;
+import com.xiaoshi.cloud.CloudFieldPopulator;
+import com.xiaoshi.cloud.CloudSimulator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -39,6 +41,7 @@ public class NatureWhisper implements ModInitializer {
 				}
 				return chunkManager.isChunkLoaded(x, z) ? chunkManager.getWorldChunk(x, z) : null;
 			}, chunkX, chunkZ);
+			CloudFieldPopulator.initializeColumn(world, chunk);
 		});
 
 		// Drive the climate simulation every second around each player of every natural world. The
@@ -61,6 +64,9 @@ public class NatureWhisper implements ModInitializer {
 					ClimateSimulator.simulateAround(world, (x, z) ->
 						chunkManager.isChunkLoaded(x, z) ? chunkManager.getWorldChunk(x, z) : null,
 						chunkX, chunkZ, ClimateSimulator.SIM_RADIUS_SECTIONS, timeOfDay);
+					CloudSimulator.step(world, (x, z) ->
+						chunkManager.isChunkLoaded(x, z) ? chunkManager.getWorldChunk(x, z) : null,
+						chunkX, chunkZ, ClimateSimulator.SIM_RADIUS_SECTIONS);
 				}
 			}
 		});

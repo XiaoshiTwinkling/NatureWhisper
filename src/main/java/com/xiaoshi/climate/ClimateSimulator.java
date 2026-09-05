@@ -26,9 +26,12 @@ import net.minecraft.world.chunk.WorldChunk;
  *   <li>Diurnal solar radiation: near the real surface (air, ground, open water are told apart by
  *   scanning the actual blocks of each column) temperature swings with a per-material phase lag and
  *   amplitude, driven by a precomputed first-order thermal-response curve per material.</li>
- *   <li>Gradient wind: within a horizontal layer the virtual temperature
- *   {@code Tv = (T + 273.15) * (1 + 0.61 * H)} rises with warmth and humidity, and air is taken to
- *   flow from high density (cold/dry) towards low density (warm/humid), i.e. along +∇Tv.</li>
+ *   <li>Gradient wind: air flows from locally high density towards locally low density, i.e. along
+ *   the horizontal gradient of each parcel's <em>diurnal anomaly</em> {@code Tv − Tv_base}. Only the
+ *   day-to-night-varying part of the density field drives this local, thermally driven wind. Driving
+ *   it by the absolute virtual temperature instead lets the time-invariant base temperature/humidity
+ *   contrasts of the biomes dominate, which pins the wind in one direction and masks the day/night
+ *   land–water reversal.</li>
  * </ol>
  *
  * <p>Every {@link ChunkSection} carries an immutable biome {@code base} value plus a live value.
@@ -45,7 +48,9 @@ public final class ClimateSimulator {
 	private enum SurfaceClass {
 		LAND(0.10, 1.0),
 		SNOW(0.12, 0.6),
-		WATER(0.28, 0.45);
+		// Large thermal inertia: water swings only a little and lags the sun for hours, which is what
+		// makes the land–water diurnal contrast (and therefore the sea/land breeze) strong.
+		WATER(0.40, 0.2);
 
 		final double tauDays;
 		/** Extra amplitude compression beyond what the response time constant already gives. */
@@ -257,7 +262,7 @@ public final class ClimateSimulator {
 		}
 	}
 
-	/** Horizontal gradient of the virtual temperature field drives the wind arrows. */
+	/** Horizontal gradient of the diurnal virtual-temperature anomaly drives the wind arrows. */
 	private static void pass2(List<Column> columns, Map<Long, Column> byPosition) {
 		for (Column column : columns) {
 			for (int i = 0; i < column.sections.length; i++) {
@@ -284,12 +289,12 @@ public final class ClimateSimulator {
 					continue;
 				}
 
-				double tvE = virtualTemperature(climateE.naturewhisper$getTemperature(), climateE.naturewhisper$getHumidity());
-				double tvW = virtualTemperature(climateW.naturewhisper$getTemperature(), climateW.naturewhisper$getHumidity());
-				double tvS = virtualTemperature(climateS.naturewhisper$getTemperature(), climateS.naturewhisper$getHumidity());
-				double tvN = virtualTemperature(climateN.naturewhisper$getTemperature(), climateN.naturewhisper$getHumidity());
-				double gradientX = tvE - tvW;
-				double gradientZ = tvS - tvN;
+				double anomalyE = diurnalAnomaly(climateE);
+				double anomalyW = diurnalAnomaly(climateW);
+				double anomalyS = diurnalAnomaly(climateS);
+				double anomalyN = diurnalAnomaly(climateN);
+				double gradientX = anomalyE - anomalyW;
+				double gradientZ = anomalyS - anomalyN;
 				double magnitude = StrictMath.sqrt(gradientX * gradientX + gradientZ * gradientZ);
 
 				if (magnitude > 1.0E-6) {
@@ -329,9 +334,28 @@ public final class ClimateSimulator {
 		return (temperature + 273.15) * (1.0 + 0.61 * humidity);
 	}
 
+	/**
+	 * The time-varying part of a parcel's virtual temperature: the live value minus its own static
+	 * base. Base temperature/humidity never change during the day, so their contrast between a land
+	 * and a water column is constant; if it were part of the wind driver it would outweigh the few-°C
+	 * diurnal swing (the +0.61 humidity term alone can amount to 10+ K) and the sea/land breeze would
+	 * never reverse. The anomaly isolates the differential surface heating that actually drives the
+	 * day/night reversal.
+	 */
+	private static double diurnalAnomaly(SectionClimate climate) {
+		double live = virtualTemperature(
+			climate.naturewhisper$getTemperature(), climate.naturewhisper$getHumidity());
+		double base = virtualTemperature(
+			climate.naturewhisper$getBaseTemperature(), climate.naturewhisper$getBaseHumidity());
+		return live - base;
+	}
+
 	/** Linearly interpolated curve value for the current phase of the day. */
 	private static double sample(double[] curve, long timeOfDay) {
-		double phase = timeOfDay % 24000L;
+		// Minecraft's clock starts at 06:00 (tick 0) with solar noon at tick 6000, while the diurnal
+		// curve has its sun peak at phase 0.5 (u = 12000 in model ticks). Align the two by shifting
+		// 6h, otherwise every day/night event (heating peak, wind reversal) lags the visible sky.
+		double phase = (timeOfDay + 6000L) % 24000L;
 		double x = phase * (double) CURVE_SAMPLES / 24000.0;
 		int i = (int) x;
 		if (i >= CURVE_SAMPLES) {
