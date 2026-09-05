@@ -1,6 +1,7 @@
 package com.xiaoshi.climate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -275,24 +276,23 @@ public final class ClimateSimulator {
 					climate.naturewhisper$setWindStrength(0.0F);
 					continue;
 				}
-				Column east = byPosition.get(ChunkPos.toLong(column.chunkX + 1, column.chunkZ));
-				Column west = byPosition.get(ChunkPos.toLong(column.chunkX - 1, column.chunkZ));
-				Column south = byPosition.get(ChunkPos.toLong(column.chunkX, column.chunkZ + 1));
-				Column north = byPosition.get(ChunkPos.toLong(column.chunkX, column.chunkZ - 1));
-				SectionClimate climateE = neighbourAir(east, i);
-				SectionClimate climateW = neighbourAir(west, i);
-				SectionClimate climateS = neighbourAir(south, i);
-				SectionClimate climateN = neighbourAir(north, i);
-				if (climateE == null || climateW == null || climateS == null || climateN == null) {
+				// Use a smoothed, slightly wider arm (offsets 1 and 2, nearer weighted more) for each
+				// cardinal direction so the resulting wind direction varies smoothly between adjacent
+				// sub-chunks instead of jittering on single-column temperature noise.
+				double[] eastVals = armAnomalies(byPosition, column, i, 1, 0);
+				double[] westVals = armAnomalies(byPosition, column, i, -1, 0);
+				double[] southVals = armAnomalies(byPosition, column, i, 0, 1);
+				double[] northVals = armAnomalies(byPosition, column, i, 0, -1);
+				if (eastVals.length == 0 || westVals.length == 0 || southVals.length == 0 || northVals.length == 0) {
 					climate.naturewhisper$setWindDirection(1.0F, 0.0F);
 					climate.naturewhisper$setWindStrength(0.0F);
 					continue;
 				}
 
-				double anomalyE = diurnalAnomaly(climateE);
-				double anomalyW = diurnalAnomaly(climateW);
-				double anomalyS = diurnalAnomaly(climateS);
-				double anomalyN = diurnalAnomaly(climateN);
+				double anomalyE = weightedMean(eastVals);
+				double anomalyW = weightedMean(westVals);
+				double anomalyS = weightedMean(southVals);
+				double anomalyN = weightedMean(northVals);
 				double gradientX = anomalyE - anomalyW;
 				double gradientZ = anomalyS - anomalyN;
 				double magnitude = StrictMath.sqrt(gradientX * gradientX + gradientZ * gradientZ);
@@ -327,6 +327,38 @@ public final class ClimateSimulator {
 			return null;
 		}
 		return climateAt(neighbour, index);
+	}
+
+	/**
+	 * Diurnal anomalies along one horizontal arm, offsets 1 then 2 columns, of loaded air sections
+	 * at the given height. Longer arms smear the gradient over a larger area, smoothing the wind.
+	 */
+	private static double[] armAnomalies(Map<Long, Column> byPosition, Column from, int index, int dirX, int dirZ) {
+		double[] values = new double[2];
+		int count = 0;
+		for (int k = 1; k <= 2; k++) {
+			Column column = byPosition.get(ChunkPos.toLong(from.chunkX + dirX * k, from.chunkZ + dirZ * k));
+			SectionClimate climate = neighbourAir(column, index);
+			if (climate != null) {
+				values[count++] = diurnalAnomaly(climate);
+			}
+		}
+		return Arrays.copyOf(values, count);
+	}
+
+	/** Weighted mean of an arm's anomalies: the nearer column (offset 1) counts double. */
+	private static double weightedMean(double[] values) {
+		if (values.length == 0) {
+			return 0.0;
+		}
+		double sum = 0.0;
+		double weightSum = 0.0;
+		for (int i = 0; i < values.length; i++) {
+			double weight = i == 0 ? 2.0 : 1.0;
+			sum += weight * values[i];
+			weightSum += weight;
+		}
+		return sum / weightSum;
 	}
 
 	/** Virtual temperature of a moist air parcel; warm + humid air is lighter. */

@@ -35,6 +35,26 @@ public final class SectionClimatePopulator {
 
 	private static final int BIOME_CELLS = 4;
 
+	/** Radius (chunks/sections) of the climate smoothing window; larger = smoother, wider-range fields. */
+	private static final int SMOOTH_RADIUS = 2;
+
+	/**
+	 * Separable axis weight for a smoothing offset. The kernel spans ±SMOOTH_RADIUS so adjacent
+	 * sub-chunks share a wide influence and the resulting field changes gradually.
+	 */
+	private static double axisWeight(int offset) {
+		switch (Math.abs(offset)) {
+			case 0:
+				return 3.0;
+			case 1:
+				return 2.0;
+			case 2:
+				return 1.0;
+			default:
+				return 0.0;
+		}
+	}
+
 	private SectionClimatePopulator() {
 	}
 
@@ -63,8 +83,8 @@ public final class SectionClimatePopulator {
 	 */
 	public static void refreshAround(BiFunction<Integer, Integer, WorldChunk> getLoadedChunk, int chunkX, int chunkZ) {
 		List<Column> columns = new ArrayList<>();
-		for (int dx = -1; dx <= 1; dx++) {
-			for (int dz = -1; dz <= 1; dz++) {
+		for (int dx = -SMOOTH_RADIUS; dx <= SMOOTH_RADIUS; dx++) {
+			for (int dz = -SMOOTH_RADIUS; dz <= SMOOTH_RADIUS; dz++) {
 				WorldChunk chunk = getLoadedChunk.apply(chunkX + dx, chunkZ + dz);
 				if (chunk != null) {
 					columns.add(new Column(chunkX + dx, chunkZ + dz, chunk));
@@ -122,19 +142,19 @@ public final class SectionClimatePopulator {
 			double weightSum = 0.0;
 			double temperature = 0.0;
 			double humidity = 0.0;
-			for (int dx = -1; dx <= 1; dx++) {
-				for (int dz = -1; dz <= 1; dz++) {
+			for (int dx = -SMOOTH_RADIUS; dx <= SMOOTH_RADIUS; dx++) {
+				for (int dz = -SMOOTH_RADIUS; dz <= SMOOTH_RADIUS; dz++) {
 					Column neighbour = columns.get(ChunkPos.toLong(target.chunkX + dx, target.chunkZ + dz));
 					if (neighbour == null) {
 						continue;
 					}
-					double horizontalWeight = (dx == 0 ? 2.0 : 1.0) * (dz == 0 ? 2.0 : 1.0);
-					for (int dy = -1; dy <= 1; dy++) {
+					double horizontalWeight = axisWeight(dx) * axisWeight(dz);
+					for (int dy = -SMOOTH_RADIUS; dy <= SMOOTH_RADIUS; dy++) {
 						int neighbourIndex = i + dy;
 						if (neighbourIndex < 0 || neighbourIndex >= neighbour.baseTemperature.length) {
 							continue;
 						}
-						double weight = horizontalWeight * (dy == 0 ? 2.0 : 1.0);
+						double weight = horizontalWeight * axisWeight(dy);
 						weightSum += weight;
 						temperature += weight * neighbour.baseTemperature[neighbourIndex];
 						humidity += weight * neighbour.baseHumidity[neighbourIndex];
