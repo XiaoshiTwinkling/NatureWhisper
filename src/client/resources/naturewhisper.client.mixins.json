@@ -7,7 +7,11 @@
 		"WorldRendererMixin",
 		"ClientWorldMixin",
 		"LightmapMixin",
-		"ExampleClientMixin"
+		"ExampleClientMixin",
+		"HandheldLightWorldRendererMixin",
+		"HandheldEntityRendererMixin",
+		"HandheldLightWorldRendererAccessor",
+		"HandheldIndigoAOMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

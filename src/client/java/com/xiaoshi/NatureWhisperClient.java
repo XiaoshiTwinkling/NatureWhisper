@@ -3,6 +3,7 @@ package com.xiaoshi;
 import com.xiaoshi.climate.ClimateSimulator;
 import com.xiaoshi.climate.SectionClimatePopulator;
 import com.xiaoshi.config.NatureWhisperConfig;
+import com.xiaoshi.light.HandheldLightEngine;
 import com.xiaoshi.screen.NatureWhisperConfigScreen;
 import com.xiaoshi.sky.Celestial;
 import com.xiaoshi.sky.StarFieldRenderer;
@@ -66,6 +67,10 @@ public class NatureWhisperClient implements ClientModInitializer {
 				world.isChunkLoaded(x, z) ? world.getChunk(x, z) : null,
 				pos.x, pos.z, ClimateSimulator.SIM_RADIUS_SECTIONS, world.getTimeOfDay());
 		});
+
+		// Handheld-light dynamic lighting: keeps an up-to-date light-source snapshot and requests
+		// chunk-section rebuilds around moving lights so the baked lightmap follows them.
+		ClientTickEvents.END_CLIENT_TICK.register(client -> HandheldLightEngine.INSTANCE.tick(client));
 
 		// Star-sky system debug overlay (hold K in a world).
 		HudRenderCallback.EVENT.register((context, unused) -> {

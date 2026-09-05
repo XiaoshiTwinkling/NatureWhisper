@@ -25,6 +25,10 @@ public final class NatureWhisperConfig {
 	public boolean depthOfFieldEnabled = false;
 	public double depthOfFieldStrength = 0.6;
 
+	// Handheld lighting: a held light-emitting block item lights its surroundings client-side, so
+	// modded clients see each other's lights.
+	public boolean handheldLighting = true;
+
 	private static NatureWhisperConfig instance = new NatureWhisperConfig();
 
 	public static NatureWhisperConfig get() {
