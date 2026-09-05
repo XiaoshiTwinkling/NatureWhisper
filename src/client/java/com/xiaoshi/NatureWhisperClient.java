@@ -69,10 +69,6 @@ public class NatureWhisperClient implements ClientModInitializer {
 
 		// Star-sky system debug overlay (hold K in a world).
 		HudRenderCallback.EVENT.register((context, unused) -> {
-			NatureWhisperConfig cfg = NatureWhisperConfig.get();
-			if (cfg.depthOfFieldEnabled) {
-				drawVignette(context);
-			}
 			MinecraftClient client = MinecraftClient.getInstance();
 			if (client.world == null || !SKY_DEBUG_KEY.isPressed()) {
 				return;

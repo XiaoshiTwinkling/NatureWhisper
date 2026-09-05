@@ -6,6 +6,7 @@
 		"ChunkBorderDebugRendererMixin",
 		"WorldRendererMixin",
 		"ClientWorldMixin",
+		"LightmapMixin",
 		"ExampleClientMixin"
 	],
 	"injectors": {

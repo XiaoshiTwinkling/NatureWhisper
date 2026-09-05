@@ -9,12 +9,9 @@ import net.minecraft.text.Text;
 
 /** In-game configuration screen (config key; intended for ModMenu too). */
 public class NatureWhisperConfigScreen extends Screen {
-	private static final double[] NIGHT_LEVELS = { 0.0, 0.5, 1.0 };
 	private static final double[] MAG_LEVELS = { 4.0, 5.0, 6.5, 8.0, 10.0 };
 
 	private final Screen parent;
-	private ButtonWidget darkerNights;
-	private ButtonWidget nightLevel;
 	private ButtonWidget magLimit;
 	private ButtonWidget motionBlur;
 	private ButtonWidget depthOfField;
@@ -28,17 +25,6 @@ public class NatureWhisperConfigScreen extends Screen {
 	protected void init() {
 		int w = this.width;
 		int y = 40;
-		darkerNights = ButtonWidget.builder(Text.empty(), b -> {
-			NatureWhisperConfig.get().darkerNights = !NatureWhisperConfig.get().darkerNights;
-			refresh();
-		}).dimensions(w / 2 - 155, y, 155, 20).build();
-		nightLevel = ButtonWidget.builder(Text.empty(), b -> {
-			NatureWhisperConfig cfg = NatureWhisperConfig.get();
-			cfg.nightDarkness = next(cfg.nightDarkness, NIGHT_LEVELS);
-			refresh();
-		}).dimensions(w / 2 + 5, y, 150, 20).build();
-
-		y += 24;
 		magLimit = ButtonWidget.builder(Text.empty(), b -> {
 			NatureWhisperConfig cfg = NatureWhisperConfig.get();
 			cfg.maxRenderMagnitude = next(cfg.maxRenderMagnitude, MAG_LEVELS);
@@ -57,8 +43,6 @@ public class NatureWhisperConfigScreen extends Screen {
 			refresh();
 		}).dimensions(w / 2 + 5, y, 150, 20).build();
 
-		this.addDrawableChild(darkerNights);
-		this.addDrawableChild(nightLevel);
 		this.addDrawableChild(magLimit);
 		this.addDrawableChild(motionBlur);
 		this.addDrawableChild(depthOfField);
@@ -85,10 +69,6 @@ public class NatureWhisperConfigScreen extends Screen {
 
 	private void refresh() {
 		NatureWhisperConfig cfg = NatureWhisperConfig.get();
-		darkerNights.setMessage(Text.translatable("screen.naturewhisper.darkerNights")
-			.append(": ").append(Text.literal(cfg.darkerNights ? "ON" : "OFF")));
-		nightLevel.setMessage(Text.translatable("screen.naturewhisper.nightDarkness")
-			.append(": ").append(Text.literal(fmt(cfg.nightDarkness))));
 		magLimit.setMessage(Text.translatable("screen.naturewhisper.magLimit")
 			.append(": ").append(Text.literal(fmt(cfg.maxRenderMagnitude))));
 		motionBlur.setMessage(Text.translatable("screen.naturewhisper.motionBlur")
