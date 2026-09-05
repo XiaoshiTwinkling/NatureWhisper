@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.xiaoshi.sky.Celestial;
 import com.xiaoshi.sky.SkyPalette;
+import com.xiaoshi.sky.StarFieldRenderer;
 import net.minecraft.block.enums.CameraSubmersionType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.ShaderProgram;
@@ -234,6 +235,10 @@ public abstract class WorldRendererMixin {
 	}
 
 	private void starField(MatrixStack matrices, Matrix4f projectionMatrix, Celestial.SkyState state, float cloud) {
+		// Real star catalog (when stars.dat is present); otherwise fall back to vanilla's stars.
+		if (StarFieldRenderer.draw(matrices, projectionMatrix, state, cloud)) {
+			return;
+		}
 		double latRad = state.latitudeDeg * Math.PI / 180.0;
 		double alt = state.sunAltitudeDeg;
 		// Stars brighten once the sun is a few degrees below the horizon.

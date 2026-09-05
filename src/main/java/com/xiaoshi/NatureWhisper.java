@@ -7,6 +7,7 @@ import com.xiaoshi.sky.Celestial;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -31,9 +32,18 @@ public class NatureWhisper implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
+		com.xiaoshi.config.NatureWhisperConfig.load();
+
+		// Random starting time of day/season only when a brand-new world is created (total time still 0).
+		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+			for (ServerWorld world : server.getWorlds()) {
+				if (world.getDimension().natural() && world.getTime() == 0) {
+					java.util.Random random = new java.util.Random();
+					long startTime = ((long) random.nextInt(120)) * Celestial.TICKS_PER_DAY + random.nextInt(24000);
+					world.setTimeOfDay(startTime);
+				}
+			}
+		});
 
 		ServerChunkEvents.CHUNK_LOAD.register((ServerWorld world, WorldChunk chunk) -> {
 			ServerChunkManager chunkManager = world.getChunkManager();

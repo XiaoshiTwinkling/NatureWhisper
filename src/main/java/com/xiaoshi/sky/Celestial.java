@@ -25,6 +25,9 @@ public final class Celestial {
 	/** World blocks per degree of latitude (world Z = 0 sits on the Tropic of Cancer). */
 	public static final double BLOCKS_PER_DEGREE = 100_000.0;
 
+	/** Brightest magnitude included in the shipped catalog (build-time cap; rendering caps separately). */
+	public static final double CATALOG_MAX_MAGNITUDE = 8.0;
+
 	private static final double TO_RAD = Math.PI / 180.0;
 	private static final double TO_DEG = 180.0 / Math.PI;
 

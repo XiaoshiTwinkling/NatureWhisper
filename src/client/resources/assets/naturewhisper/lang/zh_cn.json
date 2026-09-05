@@ -1,0 +1,13 @@
+{
+    "key.categories.naturewhisper": "NatureWhisper",
+    "key.naturewhisper.skydebug": "显示星空调试",
+    "key.naturewhisper.config": "打开设置",
+
+    "screen.naturewhisper.title": "NatureWhisper 设置",
+    "screen.naturewhisper.darkerNights": "更黑的夜晚",
+    "screen.naturewhisper.nightDarkness": "夜晚暗度",
+    "screen.naturewhisper.magLimit": "最大渲染星等",
+    "screen.naturewhisper.motionBlur": "动态模糊(未启用)",
+    "screen.naturewhisper.dof": "景深(未启用)",
+    "screen.naturewhisper.done": "完成"
+}

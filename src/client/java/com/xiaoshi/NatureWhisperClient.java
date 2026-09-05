@@ -2,7 +2,10 @@ package com.xiaoshi;
 
 import com.xiaoshi.climate.ClimateSimulator;
 import com.xiaoshi.climate.SectionClimatePopulator;
+import com.xiaoshi.config.NatureWhisperConfig;
+import com.xiaoshi.screen.NatureWhisperConfigScreen;
 import com.xiaoshi.sky.Celestial;
+import com.xiaoshi.sky.StarFieldRenderer;
 import java.util.Locale;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
@@ -15,6 +18,7 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
@@ -22,6 +26,11 @@ import org.lwjgl.glfw.GLFW;
 public class NatureWhisperClient implements ClientModInitializer {
 	private static final KeyBinding SKY_DEBUG_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 		"key.naturewhisper.skydebug", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_K, "key.categories.naturewhisper"));
+
+	private static final KeyBinding CONFIG_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+		"key.naturewhisper.config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "key.categories.naturewhisper"));
+
+	private static final Identifier VIGNETTE_TEXTURE = Identifier.of("naturewhisper", "textures/misc/vignette.png");
 
 	@Override
 	public void onInitializeClient() {
@@ -60,6 +69,10 @@ public class NatureWhisperClient implements ClientModInitializer {
 
 		// Star-sky system debug overlay (hold K in a world).
 		HudRenderCallback.EVENT.register((context, unused) -> {
+			NatureWhisperConfig cfg = NatureWhisperConfig.get();
+			if (cfg.depthOfFieldEnabled) {
+				drawVignette(context);
+			}
 			MinecraftClient client = MinecraftClient.getInstance();
 			if (client.world == null || !SKY_DEBUG_KEY.isPressed()) {
 				return;
@@ -76,7 +89,22 @@ public class NatureWhisperClient implements ClientModInitializer {
 			line(context, x, y += 9, String.format(Locale.ROOT, "moon elong=%.1f° phase=%d beta=%.1f%s", s.moonElongationDeg, s.moonPhase, s.moonEclipticLatitudeDeg, polar), color);
 			String ecl = s.eclipseKind == 1 ? "SOLAR" : (s.eclipseKind == 2 ? "LUNAR" : "none");
 			line(context, x, y += 9, String.format(Locale.ROOT, "eclipse=%s mag=%.2f  stars=%.1f°", ecl, s.eclipseMagnitude, s.starAngleDeg), color);
+			line(context, x, y += 9, StarFieldRenderer.status(), color);
 		});
+
+		// Open the configuration screen with P.
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			if (CONFIG_KEY.wasPressed() && client.currentScreen == null) {
+				client.setScreen(new NatureWhisperConfigScreen(null));
+			}
+		});
+	}
+
+	private static void drawVignette(DrawContext context) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		int w = client.getWindow().getScaledWidth();
+		int h = client.getWindow().getScaledHeight();
+		context.drawTexture(VIGNETTE_TEXTURE, 0, 0, w, h, 0.0F, 0.0F, 128, 128, 128, 128);
 	}
 
 	private static void line(DrawContext context, int x, int y, String text, int color) {

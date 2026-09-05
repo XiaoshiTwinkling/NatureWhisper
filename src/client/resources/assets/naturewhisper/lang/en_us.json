@@ -1,0 +1,13 @@
+{
+    "key.categories.naturewhisper": "NatureWhisper",
+    "key.naturewhisper.skydebug": "Show sky debug info",
+    "key.naturewhisper.config": "Open configuration",
+
+    "screen.naturewhisper.title": "NatureWhisper Configuration",
+    "screen.naturewhisper.darkerNights": "Darker nights",
+    "screen.naturewhisper.nightDarkness": "Night darkness",
+    "screen.naturewhisper.magLimit": "Max star magnitude",
+    "screen.naturewhisper.motionBlur": "Motion blur (inactive)",
+    "screen.naturewhisper.dof": "Depth of field (inactive)",
+    "screen.naturewhisper.done": "Done"
+}
