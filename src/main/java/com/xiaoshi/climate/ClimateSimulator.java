@@ -1,5 +1,6 @@
 package com.xiaoshi.climate;
 
+import com.xiaoshi.sky.Celestial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -88,6 +89,57 @@ public final class ClimateSimulator {
 	private static final double MAX_WIND = 8.0;
 
 	private static final int NONE = Integer.MIN_VALUE;
+
+	/** °C per unit of annual-mean insolation difference (drives latitude cooling). */
+	private static final double RADIATION_LATITUDE = 60.0;
+	/** °C per unit of seasonal insolation anomaly (drives seasons). */
+	private static final double RADIATION_K = 26.0;
+
+	/** Cache of annual-mean daily insolation per 0.25° of latitude. */
+	private static final java.util.concurrent.ConcurrentHashMap<Double, Double> ANNUAL_INSOLATION = new java.util.concurrent.ConcurrentHashMap<>();
+
+	/** Mean daily insolation over a whole year for a latitude (used as the local radiation baseline). */
+	private static double annualMeanInsolation(double latitude) {
+		double key = Math.rint(latitude * 4.0) / 4.0;
+		Double cached = ANNUAL_INSOLATION.get(key);
+		if (cached != null) {
+			return cached;
+		}
+		double sum = 0.0;
+		int count = 0;
+		for (int day = 0; day < Celestial.YEAR_DAYS; day += 8) {
+			Celestial.SkyState sample = Celestial.compute(day * Celestial.TICKS_PER_DAY + 6000L, latitude);
+			sum += sample.dailyInsolation;
+			count++;
+		}
+		double mean = sum / count;
+		ANNUAL_INSOLATION.put(key, mean);
+		return mean;
+	}
+
+	/** Thermal-lag of the ground against the annual insolation cycle (game days). */
+	private static long annualLagDays(SurfaceClass surfaceClass) {
+		switch (surfaceClass) {
+			case WATER:
+				return 30;
+			case SNOW:
+				return 12;
+			default:
+				return 6;
+		}
+	}
+
+	/** How strongly each surface turns absorbed radiation into surface-temperature swing. */
+	private static double heatResponse(SurfaceClass surfaceClass) {
+		switch (surfaceClass) {
+			case WATER:
+				return 0.35;
+			case SNOW:
+				return 0.6;
+			default:
+				return 1.0;
+		}
+	}
 
 	static {
 		for (SurfaceClass cls : SurfaceClass.values()) {
@@ -239,12 +291,22 @@ public final class ClimateSimulator {
 		for (Column column : columns) {
 			double curveValue = sample(CURVES[column.surfaceClass.ordinal()], timeOfDay);
 			double diurnal = curveValue * AMP * column.surfaceClass.diurnalGain;
+			// Annual radiation-driven temperature: latitude cools via the annual-mean insolation
+			// baseline, while seasons come from the current (thermal-lagged) insolation anomaly,
+			// scaled by the ground's heat capacity response.
+			double latitude = Celestial.latitudeOf((column.chunkZ << 4) + 8.0);
+			double meanInsolation = annualMeanInsolation(latitude);
+			double equatorInsolation = annualMeanInsolation(0.0);
+			long lagTicks = annualLagDays(column.surfaceClass) * Celestial.TICKS_PER_DAY;
+			double lagInsolation = Celestial.compute(timeOfDay - lagTicks, latitude).dailyInsolation;
+			double radiationOffset = RADIATION_LATITUDE * (meanInsolation - equatorInsolation)
+				+ RADIATION_K * (lagInsolation - meanInsolation) * heatResponse(column.surfaceClass);
 			for (int i = 0; i < column.sections.length; i++) {
 				ChunkSection section = column.sections[i];
 				if (section == null || !(section instanceof SectionClimate climate)) {
 					continue;
 				}
-				double base = climate.naturewhisper$getBaseTemperature();
+				double base = climate.naturewhisper$getBaseTemperature() + radiationOffset;
 				int centreY = column.bottomY + (i << 4) + 8;
 				float temperature;
 				if (centreY > column.surfaceTopY) {

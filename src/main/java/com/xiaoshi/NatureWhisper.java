@@ -1,14 +1,20 @@
 package com.xiaoshi;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.xiaoshi.climate.ClimateSimulator;
 import com.xiaoshi.climate.SectionClimatePopulator;
+import com.xiaoshi.sky.Celestial;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 
@@ -64,5 +70,45 @@ public class NatureWhisper implements ModInitializer {
 				}
 			}
 		});
+
+		registerEclipseCommand();
+	}
+
+	private static void registerEclipseCommand() {
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(
+			CommandManager.literal("naturewhisper").then(CommandManager.literal("eclipse")
+				.then(CommandManager.argument("type", StringArgumentType.word())
+					.executes(context -> runEclipse(context.getSource(), StringArgumentType.getString(context, "type"))))
+				.executes(context -> runEclipse(context.getSource(), "solar")))));
+	}
+
+	private static int runEclipse(ServerCommandSource source, String type) {
+		ServerWorld world = source.getWorld();
+		long found = findEclipse(world.getTimeOfDay(), type);
+		if (found < 0) {
+			source.sendError(Text.literal("No " + type + " eclipse found in the next few years."));
+			return 0;
+		}
+		world.setTimeOfDay(found);
+		source.sendFeedback(() -> Text.literal("Set time to day " + (found / Celestial.TICKS_PER_DAY)
+			+ ", tick " + (found % Celestial.TICKS_PER_DAY) + " (" + type + " eclipse)"), true);
+		return 1;
+	}
+
+	/** Scans a few simulated years for the next solar/lunar eclipse moment. */
+	private static long findEclipse(long startTime, String type) {
+		int wanted = "lunar".equals(type) ? 2 : 1;
+		long startDay = Celestial.compute(startTime, 0.0).day;
+		long[] offsets = { 0L, 2000L, 6000L, 10000L, 12000L, 14000L, 18000L, 22000L };
+		for (long day = startDay; day <= startDay + 8 * Celestial.YEAR_DAYS; day++) {
+			long base = day * Celestial.TICKS_PER_DAY;
+			for (long offset : offsets) {
+				Celestial.SkyState state = Celestial.compute(base + offset, 0.0);
+				if (state.eclipseKind == wanted && state.eclipseMagnitude > 0.3 && base + offset > startTime) {
+					return base + offset;
+				}
+			}
+		}
+		return -1;
 	}
 }
