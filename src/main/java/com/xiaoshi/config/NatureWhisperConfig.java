@@ -29,6 +29,11 @@ public final class NatureWhisperConfig {
 	// modded clients see each other's lights.
 	public boolean handheldLighting = true;
 
+	// Ray-traced lighting (voxel GI + soft shadows, client-side, experimental).
+	public boolean rayTracingEnabled = true;
+	public double rayTracingStrength = 0.5;
+	public int rayTracingDistance = 24;
+
 	private static NatureWhisperConfig instance = new NatureWhisperConfig();
 
 	public static NatureWhisperConfig get() {
