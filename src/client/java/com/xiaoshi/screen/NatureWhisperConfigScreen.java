@@ -18,6 +18,7 @@ public class NatureWhisperConfigScreen extends Screen {
 	private ButtonWidget motionBlurStrength;
 	private ButtonWidget depthOfField;
 	private ButtonWidget depthOfFieldStrength;
+	private ButtonWidget rayTracing;
 
 	public NatureWhisperConfigScreen(Screen parent) {
 		super(Text.translatable("screen.naturewhisper.title"));
@@ -60,11 +61,19 @@ public class NatureWhisperConfigScreen extends Screen {
 			refresh();
 		}).dimensions(w / 2 - 155, y, 310, 20).build();
 
+		y += 24;
+		rayTracing = ButtonWidget.builder(Text.empty(), b -> {
+			NatureWhisperConfig cfg = NatureWhisperConfig.get();
+			cfg.rayTracingEnabled = !cfg.rayTracingEnabled;
+			refresh();
+		}).dimensions(w / 2 - 155, y, 310, 20).build();
+
 		this.addDrawableChild(magLimit);
 		this.addDrawableChild(motionBlur);
 		this.addDrawableChild(motionBlurStrength);
 		this.addDrawableChild(depthOfField);
 		this.addDrawableChild(depthOfFieldStrength);
+		this.addDrawableChild(rayTracing);
 		this.addDrawableChild(ButtonWidget.builder(Text.translatable("screen.naturewhisper.done"), b -> this.close())
 			.dimensions(w / 2 - 75, y + 24, 150, 20).build());
 		refresh();
@@ -98,6 +107,8 @@ public class NatureWhisperConfigScreen extends Screen {
 			.append(": ").append(Text.literal(cfg.depthOfFieldEnabled ? "ON" : "OFF")));
 		depthOfFieldStrength.setMessage(Text.translatable("screen.naturewhisper.dofStrength")
 			.append(": ").append(Text.literal(fmt(cfg.depthOfFieldStrength))));
+		rayTracing.setMessage(Text.translatable("screen.naturewhisper.rayTracing")
+			.append(": ").append(Text.literal(cfg.rayTracingEnabled ? "ON" : "OFF")));
 	}
 
 	private static double next(double value, double[] levels) {

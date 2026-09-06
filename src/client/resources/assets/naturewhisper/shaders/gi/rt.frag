@@ -67,13 +67,16 @@ void main() {
     occ = clamp(occ, 0.0, 0.8);
     col *= (1.0 - occ * 0.35);
 
-    // Gentle indirect glow from nearby emissive voxels; purely additive so it can't darken anything.
-    vec3 gi = emissionAt(wp);
+    // Gentle indirect glow from emissive voxels above the surface; added as its luminance only for
+    // now (no colour bleed) and gated out on already-lit pixels so no bright/coloured speckles.
+    vec3 gi = vec3(0.0);
     for (int i = 1; i <= 3; i++) {
-        gi += emissionAt(wp + vec3(0.0, float(i) * 1.0, 0.0)) * (0.3 / float(i));
+        gi += emissionAt(wp + vec3(0.0, float(i) * 1.0, 0.0)) * (0.2 / float(i));
     }
     float luminance = dot(col, vec3(0.299, 0.587, 0.114));
-    col += gi * uStrength * 0.5 * (1.0 - luminance * 0.85);
+    float gate = max(0.0, 1.0 - luminance * 1.3);
+    float giLum = dot(gi, vec3(0.299, 0.587, 0.114));
+    col += vec3(giLum) * uStrength * 0.8 * gate;
 
     fragColor = vec4(col, 1.0);
 }

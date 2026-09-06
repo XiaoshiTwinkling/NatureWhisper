@@ -11,5 +11,6 @@
     "screen.naturewhisper.motionBlurStrength": "Motion blur strength",
     "screen.naturewhisper.dof": "Depth of field",
     "screen.naturewhisper.dofStrength": "Depth of field strength",
+    "screen.naturewhisper.rayTracing": "Ray tracing",
     "screen.naturewhisper.done": "Done"
 }

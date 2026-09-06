@@ -11,5 +11,6 @@
     "screen.naturewhisper.motionBlurStrength": "动态模糊强度",
     "screen.naturewhisper.dof": "景深",
     "screen.naturewhisper.dofStrength": "景深强度",
+    "screen.naturewhisper.rayTracing": "光线追踪",
     "screen.naturewhisper.done": "完成"
 }
