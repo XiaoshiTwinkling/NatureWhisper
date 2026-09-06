@@ -7,7 +7,9 @@
     "screen.naturewhisper.darkerNights": "Darker nights",
     "screen.naturewhisper.nightDarkness": "Night darkness",
     "screen.naturewhisper.magLimit": "Max star magnitude",
-    "screen.naturewhisper.motionBlur": "Motion blur (inactive)",
-    "screen.naturewhisper.dof": "Depth of field (inactive)",
+    "screen.naturewhisper.motionBlur": "Motion blur",
+    "screen.naturewhisper.motionBlurStrength": "Motion blur strength",
+    "screen.naturewhisper.dof": "Depth of field",
+    "screen.naturewhisper.dofStrength": "Depth of field strength",
     "screen.naturewhisper.done": "Done"
 }

@@ -1,0 +1,18 @@
+{
+    "targets": [
+        "swap"
+    ],
+    "passes": [
+        {
+            "name": "motion_blur",
+            "intarget": "minecraft:main",
+            "outtarget": "swap",
+            "use_linear_filter": true
+        },
+        {
+            "name": "nw_blit",
+            "intarget": "swap",
+            "outtarget": "minecraft:main"
+        }
+    ]
+}

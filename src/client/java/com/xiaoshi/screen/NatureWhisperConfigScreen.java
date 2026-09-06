@@ -10,11 +10,14 @@ import net.minecraft.text.Text;
 /** In-game configuration screen (config key; intended for ModMenu too). */
 public class NatureWhisperConfigScreen extends Screen {
 	private static final double[] MAG_LEVELS = { 4.0, 5.0, 6.5, 8.0, 10.0 };
+	private static final double[] MOTION_BLUR_STRENGTHS = { 0.25, 0.5, 0.75, 1.0 };
 
 	private final Screen parent;
 	private ButtonWidget magLimit;
 	private ButtonWidget motionBlur;
+	private ButtonWidget motionBlurStrength;
 	private ButtonWidget depthOfField;
+	private ButtonWidget depthOfFieldStrength;
 
 	public NatureWhisperConfigScreen(Screen parent) {
 		super(Text.translatable("screen.naturewhisper.title"));
@@ -43,11 +46,27 @@ public class NatureWhisperConfigScreen extends Screen {
 			refresh();
 		}).dimensions(w / 2 + 5, y, 150, 20).build();
 
+		y += 24;
+		motionBlurStrength = ButtonWidget.builder(Text.empty(), b -> {
+			NatureWhisperConfig cfg = NatureWhisperConfig.get();
+			cfg.motionBlurStrength = next(cfg.motionBlurStrength, MOTION_BLUR_STRENGTHS);
+			refresh();
+		}).dimensions(w / 2 - 155, y, 310, 20).build();
+
+		y += 24;
+		depthOfFieldStrength = ButtonWidget.builder(Text.empty(), b -> {
+			NatureWhisperConfig cfg = NatureWhisperConfig.get();
+			cfg.depthOfFieldStrength = next(cfg.depthOfFieldStrength, MOTION_BLUR_STRENGTHS);
+			refresh();
+		}).dimensions(w / 2 - 155, y, 310, 20).build();
+
 		this.addDrawableChild(magLimit);
 		this.addDrawableChild(motionBlur);
+		this.addDrawableChild(motionBlurStrength);
 		this.addDrawableChild(depthOfField);
+		this.addDrawableChild(depthOfFieldStrength);
 		this.addDrawableChild(ButtonWidget.builder(Text.translatable("screen.naturewhisper.done"), b -> this.close())
-			.dimensions(w / 2 - 75, y + 30, 150, 20).build());
+			.dimensions(w / 2 - 75, y + 24, 150, 20).build());
 		refresh();
 	}
 
@@ -73,8 +92,12 @@ public class NatureWhisperConfigScreen extends Screen {
 			.append(": ").append(Text.literal(fmt(cfg.maxRenderMagnitude))));
 		motionBlur.setMessage(Text.translatable("screen.naturewhisper.motionBlur")
 			.append(": ").append(Text.literal(cfg.motionBlurEnabled ? "ON" : "OFF")));
+		motionBlurStrength.setMessage(Text.translatable("screen.naturewhisper.motionBlurStrength")
+			.append(": ").append(Text.literal(fmt(cfg.motionBlurStrength))));
 		depthOfField.setMessage(Text.translatable("screen.naturewhisper.dof")
 			.append(": ").append(Text.literal(cfg.depthOfFieldEnabled ? "ON" : "OFF")));
+		depthOfFieldStrength.setMessage(Text.translatable("screen.naturewhisper.dofStrength")
+			.append(": ").append(Text.literal(fmt(cfg.depthOfFieldStrength))));
 	}
 
 	private static double next(double value, double[] levels) {

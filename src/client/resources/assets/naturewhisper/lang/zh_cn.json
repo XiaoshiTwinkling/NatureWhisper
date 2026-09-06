@@ -7,7 +7,9 @@
     "screen.naturewhisper.darkerNights": "更黑的夜晚",
     "screen.naturewhisper.nightDarkness": "夜晚暗度",
     "screen.naturewhisper.magLimit": "最大渲染星等",
-    "screen.naturewhisper.motionBlur": "动态模糊(未启用)",
-    "screen.naturewhisper.dof": "景深(未启用)",
+    "screen.naturewhisper.motionBlur": "动态模糊",
+    "screen.naturewhisper.motionBlurStrength": "动态模糊强度",
+    "screen.naturewhisper.dof": "景深",
+    "screen.naturewhisper.dofStrength": "景深强度",
     "screen.naturewhisper.done": "完成"
 }

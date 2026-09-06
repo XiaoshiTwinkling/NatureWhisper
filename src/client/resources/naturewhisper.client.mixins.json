@@ -11,7 +11,8 @@
 		"HandheldLightWorldRendererMixin",
 		"HandheldEntityRendererMixin",
 		"HandheldLightWorldRendererAccessor",
-		"HandheldIndigoAOMixin"
+		"HandheldIndigoAOMixin",
+		"MotionBlurGameRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
