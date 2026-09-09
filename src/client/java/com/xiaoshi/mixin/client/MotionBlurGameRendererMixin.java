@@ -25,6 +25,11 @@ public abstract class MotionBlurGameRendererMixin {
 					target = "net/minecraft/client/render/WorldRenderer.render(Lnet/minecraft/client/render/RenderTickCounter;ZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V",
 					shift = At.Shift.AFTER))
 	private void naturewhisper$postProcessAfterWorld(RenderTickCounter tickCounter, CallbackInfo ci) {
+		// When an Iris shaderpack is active it owns post-processing (composite chain); running our own
+		// DoF / motion-blur passes over its framebuffer would fight it.
+		if (com.xiaoshi.iris.IrisCompat.shaderPackActive()) {
+			return;
+		}
 		MinecraftClient client = MinecraftClient.getInstance();
 		float tickDelta = tickCounter.getLastFrameDuration();
 		DepthOfFieldPass.INSTANCE.render(client, tickDelta);

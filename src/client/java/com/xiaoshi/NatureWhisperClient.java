@@ -3,6 +3,8 @@ package com.xiaoshi;
 import com.xiaoshi.climate.ClimateSimulator;
 import com.xiaoshi.climate.SectionClimatePopulator;
 import com.xiaoshi.config.NatureWhisperConfig;
+import com.xiaoshi.iris.IrisCompat;
+import com.xiaoshi.iris.ShaderpackInstaller;
 import com.xiaoshi.light.HandheldLightEngine;
 import com.xiaoshi.screen.NatureWhisperConfigScreen;
 import com.xiaoshi.sky.Celestial;
@@ -10,6 +12,7 @@ import com.xiaoshi.sky.StarFieldRenderer;
 import java.util.Locale;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -35,6 +38,13 @@ public class NatureWhisperClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		// Install the bundled Iris shaderpack (no-op when already present at this version).
+		if (IrisCompat.irisModLoaded()) {
+			ShaderpackInstaller.install();
+		}
+
+		ClientLifecycleEvents.CLIENT_STARTED.register(client -> IrisCompat.invalidateCache());
+
 		// This entrypoint is suitable for setting up client-specific logic, such as rendering.
 		ClientChunkEvents.CHUNK_LOAD.register((ClientWorld world, WorldChunk chunk) -> {
 			// Mirror the server-side biome climate on the client so the F3+G overlay shows the same

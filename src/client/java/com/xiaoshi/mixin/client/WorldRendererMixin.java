@@ -64,6 +64,11 @@ public abstract class WorldRendererMixin {
 
 	@Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
 	private void naturewhisper$renderOurSky(Matrix4f positionMatrix, Matrix4f projectionMatrix, float tickDelta, Camera camera, boolean thickFog, Runnable runnable, CallbackInfo ci) {
+		// When an Iris shaderpack is active the pack owns the sky (gbuffers_skybasic/skytextured), so
+		// our Java sky dome/sun/moon/stars must not draw over it.
+		if (com.xiaoshi.iris.IrisCompat.shaderPackActive()) {
+			return;
+		}
 		if (this.world == null || this.world.getDimensionEffects().getSkyType() != net.minecraft.client.render.DimensionEffects.SkyType.NORMAL) {
 			return;
 		}
