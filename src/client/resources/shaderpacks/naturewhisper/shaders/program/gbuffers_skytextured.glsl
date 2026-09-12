@@ -50,15 +50,10 @@ void main() {
         // Sun: fade with the real (Iris) sun altitude so a setting sun dims; full when high.
         float dayFade = clamp((sunAlt + 4.0) / 12.0, 0.0, 1.0);
         albedo.rgb *= cloudDim * mix(0.5, 1.15, dayFade);
-        albedo.a = clamp(albedo.a * mix(0.5, 0.95, dayFade), 0.0, 1.0);
     } else if (renderStage == MC_RENDER_STAGE_MOON) {
-        // Moon: sun/moon quads are added (effective brightness = rgb × alpha), and our night sky is
-        // deliberately dark, so a full-alpha white moon would glare like a spotlight. Keep it soft:
-        // lower both rgb and alpha; brighten only as the night deepens.
+        // Moon: brighter than the sun-down threshold lets it — full moon should read clearly at night.
         float night = clamp((-sunAlt - 2.0) / 16.0, 0.0, 1.0);
-        float moonLevel = mix(0.18, 0.55, night);
-        albedo.rgb *= cloudDim * 0.75 * moonLevel;
-        albedo.a *= moonLevel;
+        albedo.rgb *= cloudDim * mix(0.55, 1.6, night);
     } else {
         // Any other textured sky: keep vanilla-ish, dimmed at night.
         albedo.rgb *= 0.4 + 0.6 * nwSkyBrightness(sunAlt);
